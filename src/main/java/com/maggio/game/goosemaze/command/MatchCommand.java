@@ -8,20 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.MethodParameter;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.shell.CompletionContext;
-import org.springframework.shell.CompletionProposal;
-import org.springframework.shell.MethodTarget;
 import org.springframework.shell.standard.*;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.processing.Completion;
-import java.net.URL;
-import java.util.Arrays;
+import javax.validation.ValidationException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @ShellComponent
 @ShellCommandGroup("match")
@@ -61,18 +54,44 @@ public class MatchCommand {
         return messageSource.getMessage("match.stop");
     }
 
-    @ShellMethod(value = "move")
-    public String move(String player, @ShellOption(arity = 2, defaultValue = "") List<Integer> rolls) {
-        LOGGER.info("move {} {}", player, rolls);
-        if(this.match == null){
-            return messageSource.getMessage("match.no.start");
+    @ShellMethod(value = "status")
+    public String status() {
+        try {
+            if(this.match == null){
+                throw new ValidationException(messageSource.getMessage("match.no.start"));
+            }
+            StringBuilder sb = new StringBuilder();
+            this.match.getPosition().forEach((k ,v) -> {sb.append(k).append(": ").append(v).append("\n");});
+            return sb.toString();
+        } catch (ValidationException e) {
+            return e.getMessage();
         }
-        if(playerService.exists(player)){
-            return messageSource.getMessage("player.not.found", player);
+    }
+
+    @ShellMethod(value = "move")
+    public String move(@NotEmpty String player, @Size(min = 2, max = 2) @ShellOption(defaultValue = "") List<Integer> rolls) {
+        LOGGER.debug("move {} {}", player, rolls);
+        try {
+            validateInput(player, rolls);
+            return this.match.move(player, rolls).getMessage();
+        } catch (ValidationException e) {
+            return e.getMessage();
+        }
+    }
+
+    public void validateInput(String player, List<Integer> rolls){
+        if(this.match == null){
+            throw new ValidationException(messageSource.getMessage("match.no.start"));
         }
 
-        int steps = rolls.stream().mapToInt(e -> e).sum();
-        this.match.move(player, steps);
-        return messageSource.getMessage("match.stop");
+        if(!playerService.exists(player)){
+            throw new ValidationException(messageSource.getMessage("player.not.found", player));
+        }
+
+        rolls.stream().forEach((integer -> {
+            if(integer > 6){
+                throw new ValidationException(messageSource.getMessage("rolls.not.valid", integer));
+            }
+        }));
     }
 }
