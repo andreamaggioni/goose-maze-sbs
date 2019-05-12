@@ -64,9 +64,6 @@ public class Match {
     }
 
     public Map<String, Integer> getPosition() {
-        return this.position.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue((v1, v2)-> -1 * v1.compareTo(v2)))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+        return this.position;
     }
 }

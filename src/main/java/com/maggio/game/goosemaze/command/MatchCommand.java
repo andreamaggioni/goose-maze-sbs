@@ -18,8 +18,13 @@ import org.springframework.util.CollectionUtils;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.lang.String.join;
 
 @ShellComponent
 @ShellCommandGroup("match")
@@ -65,9 +70,12 @@ public class MatchCommand {
             if(this.match == null){
                 throw new ValidationException(messageSource.getMessage("match.no.start"));
             }
-            StringBuilder sb = new StringBuilder();
-            this.match.getPosition().forEach((k ,v) -> {sb.append(k).append(": ").append(v).append("\n");});
-            return sb.toString();
+            return this.match.getPosition()
+                    .entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByValue((v1, v2)-> -1 * v1.compareTo(v2)))
+                    .map(e -> join(": ", e.getKey(), Integer.toString(e.getValue())))
+                    .collect(Collectors.joining("\n"));
         } catch (ValidationException e) {
             return e.getMessage();
         }
