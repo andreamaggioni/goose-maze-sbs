@@ -2,13 +2,18 @@ package com.maggio.game.goosemaze.command;
 
 import com.maggio.game.goosemaze.match.Match;
 import com.maggio.game.goosemaze.config.MessageConfiguration;
+import com.maggio.game.goosemaze.match.move.AbstractMove;
+import com.maggio.game.goosemaze.match.move.WinMove;
 import com.maggio.game.goosemaze.service.PlayerService;
+import com.sun.java.swing.plaf.windows.WindowsTreeUI;
+import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.shell.standard.*;
+import org.springframework.util.CollectionUtils;
 
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
@@ -69,11 +74,20 @@ public class MatchCommand {
     }
 
     @ShellMethod(value = "move")
-    public String move(@NotEmpty String player, @Size(min = 2, max = 2) @ShellOption(defaultValue = "") List<Integer> rolls) {
+    public String move(@NotEmpty String player, @ShellOption(defaultValue = "") List<Integer> rolls) {
         LOGGER.debug("move {} {}", player, rolls);
+        if(CollectionUtils.isEmpty(rolls)){
+            rolls.add(RandomUtils.nextInt(1,6));
+            rolls.add(RandomUtils.nextInt(1,6));
+            LOGGER.debug("move {} {}, rolls random generated", player, rolls);
+        }
         try {
             validateInput(player, rolls);
-            return this.match.move(player, rolls).getMessage();
+            AbstractMove move = this.match.move(player, rolls);
+            if(move instanceof WinMove){
+                this.match = null;
+            }
+            return move.getMessage();
         } catch (ValidationException e) {
             return e.getMessage();
         }
@@ -88,8 +102,12 @@ public class MatchCommand {
             throw new ValidationException(messageSource.getMessage("player.not.found", player));
         }
 
+        if(rolls.size() > 2 || rolls.size() < 0){
+            throw new ValidationException(messageSource.getMessage("rolls.size"));
+        }
+
         rolls.stream().forEach((integer -> {
-            if(integer > 6){
+            if(integer > 6 || integer < 1){
                 throw new ValidationException(messageSource.getMessage("rolls.not.valid", integer));
             }
         }));

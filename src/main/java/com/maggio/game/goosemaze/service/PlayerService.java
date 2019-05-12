@@ -2,14 +2,14 @@ package com.maggio.game.goosemaze.service;
 
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+
 
 @Service
 public class PlayerService {
 
-    private Set<String> players = new HashSet<>();
+    private Set<String> players = new TreeSet<>();
 
     public boolean hasPlayers() {
         return !players.isEmpty();
@@ -29,5 +29,9 @@ public class PlayerService {
 
     public boolean exists(String player) {
         return players.contains(player);
+    }
+
+    public void clear() {
+        this.players.clear();
     }
 }

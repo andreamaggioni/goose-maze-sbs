@@ -34,6 +34,8 @@ public class Match {
 
     @Autowired private BeanFactory beanFactory;
 
+    @Autowired private MoveFactory moveFactory;
+
     private Map<String, Integer> position = null;
 
     public Match(Set<String> list) {
@@ -44,23 +46,19 @@ public class Match {
     public AbstractMove move(String player, @Size(min = 2, max = 2) List<Integer> rolls) {
         int currentSpace = position.get(player);
         int newSpace = currentSpace + rolls.stream().mapToInt(Integer::valueOf).sum();
+
         AbstractMove move = null;
-
-        if(newSpace == winCell){
-            move = this.beanFactory.getBean(WinMove.class, player, rolls.get(0), rolls.get(1), currentSpace);
-            position.put(player, move.getNewSpace());
-            return move;
+        if(newSpace > winCell) {
+            move = this.moveFactory.bounceMove(player, rolls.get(0), rolls.get(1), currentSpace);
+        } else if(newSpace == winCell){
+            move = this.moveFactory.winMove(player, rolls.get(0), rolls.get(1), currentSpace);
         } else if(newSpace == bridgeSpace){
-            move = this.beanFactory.getBean(BridgeMove.class, player, rolls.get(0), rolls.get(1), currentSpace);
-            position.put(player, move.getNewSpace());
-            return move;
+            move = this.moveFactory.bridgeMove(player, rolls.get(0), rolls.get(1), currentSpace);
         } else if (this.gooseSpaces.contains(newSpace)){
-            move = this.beanFactory.getBean(GooseMove.class, player, rolls.get(0), rolls.get(1), currentSpace);
-            position.put(player, move.getNewSpace());
-            return move;
+            move = this.moveFactory.gooseMove(player, rolls.get(0), rolls.get(1), currentSpace);
+        } else {
+            move = this.moveFactory.move(player, rolls.get(0), rolls.get(1), currentSpace);
         }
-
-        move = this.beanFactory.getBean(Move.class, player, rolls.get(0), rolls.get(1), currentSpace);
         position.put(player, move.getNewSpace());
         return move;
     }
