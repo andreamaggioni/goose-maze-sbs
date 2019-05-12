@@ -42,8 +42,8 @@ public class MatchCommand {
 
     private Match match;
 
-    @ShellMethod(value = "start match", key = "start match")
-    public String startMatch() {
+    @ShellMethod(value = "start match", key = {"start match", "sm"})
+    public String startMatch(boolean withPlank) {
         if(!playerService.hasPlayers()){
             return messageSource.getMessage("match.no.players");
         }
@@ -54,7 +54,7 @@ public class MatchCommand {
         if(players.size() < minPlayers){
             return messageSource.getMessage("match.need.players", minPlayers);
         }
-        this.match = beanFactory.getBean(Match.class, players);
+        this.match = beanFactory.getBean(Match.class, players, withPlank);
         return messageSource.getMessage("match.started");
     }
 

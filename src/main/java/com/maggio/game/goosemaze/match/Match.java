@@ -29,8 +29,7 @@ public class Match {
 
     @Value("${march.gooseSpaces}") private List<Integer> gooseSpaces;
 
-    @Autowired
-    private MessageConfiguration.CustomMessageSource messageSource;
+    @Autowired private MessageConfiguration.CustomMessageSource messageSource;
 
     @Autowired private BeanFactory beanFactory;
 
@@ -38,8 +37,11 @@ public class Match {
 
     private Map<String, Integer> position = null;
 
-    public Match(Set<String> list) {
+    private final boolean withPlank;
+
+    public Match(Set<String> list, boolean withPlank) {
         position = list.stream().collect(Collectors.toMap(Function.identity(), e -> 0));
+        this.withPlank = withPlank;
         LOGGER.debug("Create match with player: {}", position);
     }
 
@@ -59,11 +61,29 @@ public class Match {
         } else {
             move = this.moveFactory.move(player, rolls.get(0), rolls.get(1), currentSpace);
         }
-        position.put(player, move.getNewSpace());
+        return this.changePosition(move);
+    }
+
+    private AbstractMove changePosition(AbstractMove move) {
+        position.put(move.getPlayer(), move.getNewSpace());
+        if(this.withPlank) {
+            Optional<String> otherPlayer = this.position.entrySet()
+                    .stream()
+                    .filter(e -> !e.getKey().equals(move.getPlayer()))
+                    .filter(e -> e.getValue() == move.getNewSpace())
+                .map(e -> e.getKey())
+            .findFirst();
+
+            if(otherPlayer.isPresent()){
+                this.position.put(otherPlayer.get(), move.getCurrentSpace());
+                String plankMove = this.messageSource.getMessage("match.plank", move.getNewSpace(), otherPlayer.get(), move.getCurrentSpace());
+                move.setPlankMove(plankMove);
+            }
+        }
         return move;
     }
 
     public Map<String, Integer> getPosition() {
-        return this.position;
+        return new HashMap<>(this.position);
     }
 }

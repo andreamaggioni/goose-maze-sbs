@@ -14,6 +14,8 @@ public abstract class AbstractMove {
 
     private String message;
 
+    private String plankMove = "";
+
     public AbstractMove(String player, Integer firstRoll, Integer secondRoll, int currentSpace, int newSpace, String message) {
         this.player = player;
         this.firstRoll = firstRoll;
@@ -44,18 +46,10 @@ public abstract class AbstractMove {
     }
 
     public String getMessage() {
-        return message;
+        return message + this.plankMove;
     }
 
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + " {" +
-                "player='" + player + '\'' +
-                ", firstRoll=" + firstRoll +
-                ", secondRoll=" + secondRoll +
-                ", currentSpace=" + currentSpace +
-                ", newSpace=" + newSpace +
-                ", message='" + message + '\'' +
-                '}';
+    public void setPlankMove(String plankMove){
+        this.plankMove = plankMove;
     }
 }
