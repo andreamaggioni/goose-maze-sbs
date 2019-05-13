@@ -1,6 +1,7 @@
 package com.maggio.game.goosemaze;
 
 import com.maggio.game.goosemaze.service.PlayerService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -10,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.shell.Shell;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.shell.jline.ScriptShellApplicationRunner;
-import org.springframework.shell.result.DefaultResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.*;
@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 		InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "=false",
 		ScriptShellApplicationRunner.SPRING_SHELL_SCRIPT_ENABLED + "=false"
 })
-public class PlanersTest {
+public class MatchTest {
 
 	@Autowired private Shell shell;
 
@@ -29,6 +29,12 @@ public class PlanersTest {
 
 	@Before
 	public void before(){
+		playerService.add("p1");
+		playerService.add("p2");
+	}
+
+	@After
+	public void after(){
 		playerService.clear();
 	}
 
@@ -40,29 +46,16 @@ public class PlanersTest {
 	}
 
 	@Test
-	public void addPlayer() {
-		String output = (String) shell.evaluate(() -> "add player c");
+	public void startStop() {
+		String output = (String) shell.evaluate(() -> "start match");
 		assertFalse(Shell.NO_INPUT.equals(output));
 		assertNotNull(output);
-		assertTrue(output.contains("players: c"));
+		assertTrue(output.contains("Game started!"));
 
-		output = (String) shell.evaluate(() -> "add player c1");
+		output = (String) shell.evaluate(() -> "stop match");
 		assertFalse(Shell.NO_INPUT.equals(output));
 		assertNotNull(output);
-		assertTrue(output.contains("players: c, c1"));
-	}
-
-	@Test
-	public void addDupPlayer() {
-		String output = (String) shell.evaluate(() -> "add player c");
-		assertFalse(Shell.NO_INPUT.equals(output));
-		assertNotNull(output);
-		assertTrue(output.contains("players: c"));
-
-		output = (String) shell.evaluate(() -> "add player c");
-		assertFalse(Shell.NO_INPUT.equals(output));
-		assertNotNull(output);
-		assertTrue(output.contains("c: already existing player"));
+		assertTrue(output.contains("The game is over!"));
 	}
 
 }
