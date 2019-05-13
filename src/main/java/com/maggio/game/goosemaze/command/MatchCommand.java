@@ -5,7 +5,6 @@ import com.maggio.game.goosemaze.config.MessageConfiguration;
 import com.maggio.game.goosemaze.match.move.AbstractMove;
 import com.maggio.game.goosemaze.match.move.WinMove;
 import com.maggio.game.goosemaze.service.PlayerService;
-import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +16,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +39,7 @@ public class MatchCommand {
 
     private Match match;
 
-    @ShellMethod(value = "start match", key = {"start match", "sm"})
+    @ShellMethod(value = "Permette di avviare una partita.", key = {"start match", "sm"})
     public String startMatch(boolean withPlank) {
         if(!playerService.hasPlayers()){
             return messageSource.getMessage("match.no.players");
@@ -58,13 +55,16 @@ public class MatchCommand {
         return messageSource.getMessage("match.started");
     }
 
-    @ShellMethod(value = "stop match", key = "stop match")
+    @ShellMethod(value = "Porta a termine la partita attualmente in corso.", key = "stop match")
     public String stopMatch() {
+        if(this.match == null){
+            return messageSource.getMessage("match.no.start");
+        }
         this.match = null;
         return messageSource.getMessage("match.stop");
     }
 
-    @ShellMethod(value = "status")
+    @ShellMethod(value = "Mostra le posizioni dei giocatori nella partita attualmente in corso.")
     public String status() {
         try {
             if(this.match == null){
@@ -81,7 +81,7 @@ public class MatchCommand {
         }
     }
 
-    @ShellMethod(value = "move")
+    @ShellMethod(value = "move", key = {"move","mv"})
     public String move(@NotEmpty String player, @ShellOption(defaultValue = "") List<Integer> rolls) {
         LOGGER.debug("move {} {}", player, rolls);
         if(CollectionUtils.isEmpty(rolls)){
