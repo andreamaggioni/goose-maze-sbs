@@ -76,7 +76,7 @@ public class Match {
 
             if(otherPlayer.isPresent()){
                 this.position.put(otherPlayer.get(), move.getCurrentSpace());
-                String plankMove = this.messageSource.getMessage("match.plank", move.getNewSpace(), otherPlayer.get(), move.getCurrentSpace());
+                String plankMove = this.messageSource.getMessage("match.plank", move.getNewSpace(), otherPlayer.get(), move.getCurrentSpace() == 0 ? "Start" : move.getCurrentSpace());
                 move.setPlankMove(plankMove);
             }
         }
