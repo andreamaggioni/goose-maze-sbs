@@ -57,6 +57,53 @@ public class MatchShellTest {
 	}
 
 	@Test
+	public void playerNotPresent() {
+		String output = (String) shell.evaluate(() -> "start match");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("Game started!"));
+
+		output = (String) shell.evaluate(() -> "move p3");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("Player p3 not found!"));
+
+		output = (String) shell.evaluate(() -> "stop match");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("The game is over!"));
+	}
+
+	@Test
+	public void rollsValidation() {
+		String output = (String) shell.evaluate(() -> "start match");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("Game started!"));
+
+		output = (String) shell.evaluate(() -> "move p2 2,2,2");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("You can not roll more then 2 dice!"));
+
+		output = (String) shell.evaluate(() -> "move p1 12,12");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("12 is not a valid roll!"));
+
+		output = (String) shell.evaluate(() -> "move p1 2, 3");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("12 is not a valid roll!"));
+
+		output = (String) shell.evaluate(() -> "stop match");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("The game is over!"));
+	}
+
+
+	@Test
 	public void bridgeMove() {
 		String output = (String) shell.evaluate(() -> "start match");
 		assertNotEquals(Shell.NO_INPUT, output);
@@ -72,6 +119,25 @@ public class MatchShellTest {
 		assertNotEquals(Shell.NO_INPUT, output);
 		assertNotNull(output);
 		assertTrue(output.contains("The game is over!"));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rollsSpaceValidation() {
+		String output = (String) shell.evaluate(() -> "start match");
+		assertNotEquals(Shell.NO_INPUT, output);
+		assertNotNull(output);
+		assertTrue(output.contains("Game started!"));
+
+		try {
+			IllegalArgumentException exception = (IllegalArgumentException) shell.evaluate(() -> "move p1 2, 3");
+			throw  exception;
+		} catch (IllegalArgumentException e) {
+			output = (String) shell.evaluate(() -> "stop match");
+			assertNotEquals(Shell.NO_INPUT, output);
+			assertNotNull(output);
+			assertTrue(output.contains("The game is over!"));
+			throw e;
+		}
 	}
 
 	@Test
