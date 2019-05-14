@@ -36,7 +36,7 @@ I comandi sotto riportati consentono di giocare:
 3. **status**: permette di mostrare la posizione dei giocatori durante il gioco.
 4. **stop match**: permette di interrompere la partita in corso.
 
-##Esempio
+## Esempio
 Una volta avviato il programma sarà necessario aggiungere almeno due giocatori per poter avviare la partita:
 ```
 goose-maze:>add player pippo
@@ -78,4 +78,14 @@ goose-maze:>move pippo 2,2
 pippo rolls 2, 2. pippo moves from 59 to 63. pippo win!!! Match end!!!
 
 ```
-**NB**: 
+**NB**: il gioco si basa su una shell in linux stile; le varie parti dei comandi vengono individuate effettuando un *split* utilizzando il carattere " " (spazio).
+Nel caso si volesse inserire una lista utilizzando degli spazi, è necessario includere i campi all'intero di due apici:
+
+```
+goose-maze:>move pluto '2, 2'
+pluto rolls 2, 2. pluto moves from Start to 4.
+```
+## Test
+Sono stati configurati principalemnte due casi di test principali:
+1. **PlanersShellTest**: contiene dei casi di test che servono per verificare il funzionamento dell'inserimento di un giocatore.
+2. **MatchShellTest**: contiene dei casi di test che servono per verificare il corretto funzionamento di un match, dal suo avvio, alle varie casistiche che compongono il gioco.
