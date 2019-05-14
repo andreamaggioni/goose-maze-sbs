@@ -1,17 +1,25 @@
 package com.maggio.game.goosemaze;
 
+import com.maggio.game.goosemaze.match.Match;
+import com.maggio.game.goosemaze.match.move.AbstractMove;
+import com.maggio.game.goosemaze.match.move.WinMove;
 import com.maggio.game.goosemaze.service.PlayerService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.shell.Shell;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.shell.jline.ScriptShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -23,39 +31,38 @@ import static org.junit.Assert.*;
 })
 public class MatchTest {
 
-	@Autowired private Shell shell;
+	@Autowired private BeanFactory beanFactory;
 
-	@Autowired private PlayerService playerService;
+	private Match match = null;
+
+	private static final Integer MAX_TRY = 100;
+
+	private Random random = new Random();
+
+	@Value("${test.players: p1,p2}")
+	private Set<String> players;
 
 	@Before
 	public void before(){
-		playerService.add("p1");
-		playerService.add("p2");
-	}
-
-	@After
-	public void after(){
-		playerService.clear();
+		match = this.beanFactory.getBean(Match.class, players, false);
 	}
 
 	@Test
-	public void contextLoads() {
-		Object help = shell.evaluate(() -> "help");
-		assertFalse(Shell.NO_INPUT.equals(help));
-		assertNotNull(help);
+	public void run() {
+		int count = 0;
+		while (count < MAX_TRY){
+			count++;
+			for(String player : players){
+				List<Integer> rolls = random.ints(2, 1,6)
+						.boxed()
+						.collect(Collectors.toList());
+				AbstractMove move = this.match.move(player, rolls);
+				System.out.println(move.getClass().getSimpleName() + ": " + move.getMessage());
+				if(move instanceof WinMove){
+					System.out.println("GAME END!!!");
+					return;
+				}
+			}
+		}
 	}
-
-	@Test
-	public void startStop() {
-		String output = (String) shell.evaluate(() -> "start match");
-		assertFalse(Shell.NO_INPUT.equals(output));
-		assertNotNull(output);
-		assertTrue(output.contains("Game started!"));
-
-		output = (String) shell.evaluate(() -> "stop match");
-		assertFalse(Shell.NO_INPUT.equals(output));
-		assertNotNull(output);
-		assertTrue(output.contains("The game is over!"));
-	}
-
 }
